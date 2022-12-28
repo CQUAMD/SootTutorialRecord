@@ -33,6 +33,7 @@ public class AndroidClassInjector {
         // Create and inject a class with a field and a method to the APK
         SootMethod incNLogMethod = injectCode(packageName);
         // Add a transformation pack in order to insert incrementAndLog method at top of each method in the app
+        // 这里如果要针对性插入可能需要对internalTransform里面的body的getUnits进行apply caseInvokeStmt类似，否则是对所有的方法进行插入。
         PackManager.v().getPack("jtp").add(
                 new Transform("jtp.myLogger", new StaticMethodCallInjector(incNLogMethod)));
         PackManager.v().runPacks();
@@ -113,6 +114,7 @@ public class AndroidClassInjector {
         Unit returnUnit = Jimple.v().newReturnVoidStmt();
         units.add(returnUnit);
         body.validate();
+        // 方法加入主体
         incMethod.setActiveBody(body);
         return incMethod;
     }

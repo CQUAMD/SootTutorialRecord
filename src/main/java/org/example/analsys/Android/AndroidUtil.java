@@ -38,6 +38,8 @@ public class AndroidUtil {
         final InfoflowAndroidConfiguration config = new InfoflowAndroidConfiguration();
         config.getAnalysisFileConfig().setTargetAPKFile(apkPath);
         config.getAnalysisFileConfig().setAndroidPlatformDir(androidJar);
+        //因为存在一些声明了但是没用的代码，所以FlowDroid是提供这种功能的
+        //但是作者这里禁用了，并且作者说如果你想对应用程序进行检测或使用PointsToAnalysis，你必须禁用CodeElimination
         config.setCodeEliminationMode(InfoflowConfiguration.CodeEliminationMode.NoCodeElimination);
         config.setEnableReflection(true);
         config.setCallgraphAlgorithm(cgAlgorithm);

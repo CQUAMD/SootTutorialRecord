@@ -61,6 +61,7 @@ public class InstrumentUtil {
             // value不为空就需要进行拼接
             logMsg = InstrumentUtil.appendTwoStrings(b, logMessage, value, generated);
         SootMethod sm = Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>");
+        // android的log需要tag和message两个参数
         StaticInvokeExpr invokeExpr = Jimple.v().newStaticInvokeExpr(sm.makeRef(), logType, logMsg);
         generated.add(Jimple.v().newInvokeStmt(invokeExpr));
         return generated;
@@ -78,36 +79,51 @@ public class InstrumentUtil {
         RefType stringType = Scene.v().getSootClass("java.lang.String").getType();
         SootClass builderClass = Scene.v().getSootClass("java.lang.StringBuilder");
         RefType builderType = builderClass.getType();
+        //由StringBuilder类型创建的new表达式
         NewExpr newBuilderExpr = Jimple.v().newNewExpr(builderType);
+        //创建一个StringBuilder的局部变量
         Local builderLocal = generateNewLocal(b, builderType);
+        // 类似于StringBuilder local = new StringBuilder()
         generated.add(Jimple.v().newAssignStmt(builderLocal, newBuilderExpr));
         Local tmpLocal = generateNewLocal(b, builderType);
         Local resultLocal = generateNewLocal(b, stringType);
-
+        // builderLocal.append(toString(s2))
         VirtualInvokeExpr appendExpr = Jimple.v().newVirtualInvokeExpr(builderLocal,
                 builderClass.getMethod("java.lang.StringBuilder append(java.lang.String)").makeRef(), toString(b, s2, generated));
         VirtualInvokeExpr toStrExpr = Jimple.v().newVirtualInvokeExpr(builderLocal, builderClass.getMethod("java.lang.String toString()").makeRef());
-
+        // 等效于类似于StringBuilder builderLocal = StringBuilder(s1)
         generated.add(Jimple.v().newInvokeStmt(
                 Jimple.v().newSpecialInvokeExpr(builderLocal, builderClass.getMethod("void <init>(java.lang.String)").makeRef(), s1)));
+        //tmpLocal = builderLocal.append(toString(s2))
         generated.add(Jimple.v().newAssignStmt(tmpLocal, appendExpr));
+        // String resultLocal = tmpLocal.toString()
         generated.add(Jimple.v().newAssignStmt(resultLocal, toStrExpr));
 
         return resultLocal;
     }
 
+    /**
+     *
+     * @param b Jimple body
+     * @param value toString的主体
+     * @param generated 装载Jimple的容器，因为可能存在说需要value toString的Jimple代码
+     * @return
+     */
     public static Value toString(Body b, Value value, List<Unit> generated) {
         SootClass stringClass = Scene.v().getSootClass("java.lang.String");
+        // 本身就是String类型就不管
         if (value.getType().equals(stringClass.getType()))
             return value;
         Type type = value.getType();
-
+        // PrimType指代 all types except void, null, reference types, and array types
+        // 如果是PrimType就创建valueOf(int)类似的Jimple语句
         if (type instanceof PrimType) {
             Local tmpLocal = generateNewLocal(b, stringClass.getType());
             generated.add(Jimple.v().newAssignStmt(tmpLocal,
                     Jimple.v().newStaticInvokeExpr(stringClass.getMethod("java.lang.String valueOf(" + type.toString() + ")").makeRef(), value)));
             return tmpLocal;
         } else if (value instanceof Local){
+            // 如果是局部变量那就调用value.toString()获取他的String类似
             Local base = (Local) value;
             SootMethod toStrMethod = Scene.v().getSootClass("java.lang.Object").getMethod("java.lang.String toString()");
             Local tmpLocal = generateNewLocal(b, stringClass.getType());
