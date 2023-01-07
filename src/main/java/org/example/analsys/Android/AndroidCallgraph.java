@@ -28,16 +28,20 @@ public class AndroidCallgraph {
     static Boolean draw = false;
     //两种算法的差别，SPARK更慢，但是会更精准，但是不排除miss Edge的情况，CHA相比之下会更快，但是相对的会没SPARK精准
     //注意精准并不是说CHA比SPARK包含的信息更少，有时候CHA可能包含了过多的边，比如A继承B，但是main方法即指向A也指向B
-    static InfoflowConfiguration.CallgraphAlgorithm algorithm = InfoflowConfiguration.CallgraphAlgorithm.SPARK;
+    //static InfoflowConfiguration.CallgraphAlgorithm algorithm = InfoflowConfiguration.CallgraphAlgorithm.SPARK;
     //static InfoflowConfiguration.CallgraphAlgorithm algorithm = InfoflowConfiguration.CallgraphAlgorithm.CHA;
 
     public static void main(String[] args){
         if(System.getenv().containsKey("ANDROID_HOME"))
             androidJar = System.getenv("ANDROID_HOME")+ File.separator+"platforms";
 
-
-        InfoflowConfiguration.CallgraphAlgorithm cgAlgorithm = algorithm;
-        boolean drawGraph = draw;
+        // Parse arguments
+        InfoflowConfiguration.CallgraphAlgorithm cgAlgorithm = InfoflowConfiguration.CallgraphAlgorithm.SPARK;
+        if (args.length > 0 && args[0].equals("CHA"))
+            cgAlgorithm = InfoflowConfiguration.CallgraphAlgorithm.CHA;
+        boolean drawGraph = false;
+        if (args.length > 1 && args[1].equals("draw"))
+            drawGraph = true;
         // Setup FlowDroid
         final InfoflowAndroidConfiguration config = AndroidUtil.getFlowDroidConfig(apkPath, androidJar, cgAlgorithm);
         //创建FlowDroid controller
