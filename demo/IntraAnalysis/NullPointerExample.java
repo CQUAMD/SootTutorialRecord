@@ -8,7 +8,7 @@ public class NullPointerExample {
     }
 
     public void methodB(Data param){
-        use(param);
+        use(param);//因为可能param是NULL，所以这里是
     }
 
 
@@ -20,7 +20,7 @@ public class NullPointerExample {
         use(notNull);
         use(mustNull);
         Object o = new Object();
-        if(o.hashCode() % 2 == 0) {
+        if(o.hashCode() % 2 == 0) {//因为存在if所以会分流，也会出现merge的情况
             mayNullData = new Data("I'm not null anymore");
             notNull = new Data("Me neither");
             mustNull = null;

@@ -16,6 +16,8 @@ public class HelloSoot {
     public static String methodName = "printFizzBuzz";
 
     public static void setupSoot() {
+        // 重置 Soot 图的状态。
+        // Soot 图是一种用于表示程序结构和流程的数据结构，包括调用图、流图和控制图等。使用 Soot 图可以方便地分析程序，提取信息，优化代码等。
         G.reset();
         Options.v().set_prepend_classpath(true);//与其用命令行上给出的 classpath 替换默认的 soot classpath， 不如用该 classpath 来预置它。如果开启whole-program模式，还会添加jce.jar
         //Options.v().set_allow_phantom_refs(true);允许出现找不到引用的class，但是仍可以处理当前class。不推荐的原因是因为它开启后可能会导致结果是错误的。

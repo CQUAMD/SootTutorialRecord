@@ -5,6 +5,11 @@ import soot.toolkits.scalar.AbstractBoundedFlowSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+/**
+ * 继承自AbstractBoundedFlowSet（它是一个有界流集合）
+ * 其实和普通的Set没感觉有太大区别
+ */
 public class NullFlowSet extends AbstractBoundedFlowSet<Local> {
 
     private Set<Local> nullLocals = new HashSet<>();
